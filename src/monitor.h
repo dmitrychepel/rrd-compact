@@ -18,7 +18,7 @@ public:
     Sizes[5] = 8;//56d (~2mo)
     Sizes[6] = 8;//448d (>1y)
     Offsets[0] = 0;
-    for (unsigned char i = 1; i < _Slots; ++i) {
+    for (unsigned char i = 0; i < _Slots-1; ++i) {
       Offsets[i + 1] = Offsets[i] + Sizes[i + 1];
     }
     memset_T(&LastSeconds[0], (ValueType)0, _TOTAL);
@@ -71,7 +71,7 @@ private:
     unsigned char firstFreePos = (lastUpdate + 1) % slotSize;
     if (lastPos > newPos || diff > slotSize) {
       if (firstFreePos) {
-        ValueType fillValue = (_value*(diff)+LastSeconds[lastPos] * (diff%slotSize)) / (diff + diff%slotSize);
+        ValueType fillValue = (_value*(diff%slotSize) + LastSeconds[lastPos] * (diff)) / (diff + diff%slotSize);
         memset_T(&LastSeconds[slotOffset + firstFreePos], fillValue, slotSize - firstFreePos);
         firstFreePos = 0;
       }
