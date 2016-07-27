@@ -19,7 +19,7 @@ public:
     Sizes[6] = 8;//448d (>1y)
     Offsets[0] = 0;
     for (unsigned char i = 0; i < _Slots-1; ++i) {
-      Offsets[i + 1] = Offsets[i] + Sizes[i + 1];
+      Offsets[i + 1] = Offsets[i] + Sizes[i];
     }
     memset_T(&LastSeconds[0], (ValueType)0, _TOTAL);
     memset_T(&LastUpdate[0], (unsigned long)0, _Slots);
@@ -71,14 +71,14 @@ private:
     unsigned char firstFreePos = (lastUpdate + 1) % slotSize;
     if (lastPos > newPos || diff > slotSize) {
       if (firstFreePos) {
-        ValueType fillValue = (_value*(diff%slotSize) + LastSeconds[lastPos] * (diff)) / (diff + diff%slotSize);
+        ValueType fillValue = (_value*(diff%slotSize) + LastSeconds[slotOffset + lastPos] * (diff)) / (diff + diff%slotSize);
         memset_T(&LastSeconds[slotOffset + firstFreePos], fillValue, slotSize - firstFreePos);
         firstFreePos = 0;
       }
       Extrude(lastUpdate, _slot);
     }
     if (diff > 1) {
-      ValueType fillValue = (_value*(diff)+LastSeconds[lastPos] * (diff%slotSize)) / (diff + diff%slotSize);
+      ValueType fillValue = (_value*(diff%slotSize) + LastSeconds[slotOffset + lastPos] * (diff)) / (diff + diff%slotSize);
       memset_T(&LastSeconds[slotOffset + firstFreePos], fillValue, newPos - firstFreePos);
     }
     
