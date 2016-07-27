@@ -87,25 +87,35 @@ private:
   }
 
   ValueType _GetData(unsigned long _timeOffset, unsigned long _period, unsigned char _slot) {
+    unsigned long lastUpdate = LastUpdate[_slot];
+    if (lastUpdate == 0)
+      return 0;
     if (_period == 0)
       _period = 1;
     ValueType accumulated = 0;
     unsigned char slotSize = Sizes[_slot];
     unsigned long restPeriod = _period;
-    if (_timeOffset <= slotSize) {
-      unsigned long lastUpdate = LastUpdate[_slot];
+    if (_timeOffset < slotSize) {
       unsigned char pos = (lastUpdate - _timeOffset) % slotSize;
       unsigned char lastPos = lastUpdate % slotSize;
-      unsigned pp = pos < restPeriod ? pos : restPeriod;
-      if (pp) {
+      // case one: lastpos < pos < slotsize => read from (pos - min(pos - lastpos, restPeriod), min(pos - lastpos, restPeriod))
+      // we could not continue read when pos became to be equal lastpos
+      // case two: 0 < pos <= lastpos. read from pos till zero. after we should continue read from slotsize to lastpos(case one)
+
+      if (pos <= lastPos && pos != 0)
+      {
+        unsigned char pp = (pos < restPeriod ? pos+1 : (unsigned char)restPeriod);
         accumulated = Avergade(_slot, (unsigned char)(pos - pp + 1), pp);
         restPeriod -= pp;
         if (!restPeriod)
           return accumulated;
+        pos = 0;
       }
-      unsigned char ss = slotSize - lastPos;
+      if (pos == 0)
+        pos = slotSize;
+      unsigned char ss = pos - lastPos;
       if (ss >= restPeriod)
-        return Avergade(_slot, slotSize - ss, (unsigned char)restPeriod);
+        return Avergade(_slot, slotSize - (unsigned char)restPeriod, (unsigned char)restPeriod);
     }
     ValueType awayAccumulated = _GetData(_timeOffset / slotSize, restPeriod / slotSize, _slot + 1);
     if (_period > 256 || _timeOffset >= slotSize)

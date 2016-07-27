@@ -21,7 +21,8 @@ void fill24Data() {
       m.PutData(cur, 8);
   }
 }
-
+static int x = 0;
+unsigned int filled = 0;
 void printStats(unsigned size) {
   COORD coordScreen = { 0, 0 };
   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coordScreen);
@@ -30,22 +31,26 @@ void printStats(unsigned size) {
     unsigned long period = 0;
     unsigned long lu = 0;
     unsigned long k = m.NextAlignedData(totaloffset, size, period, lu);
-
-    printf("%d : %d mA\n", totaloffset, k);
+    printf("%d : %d mA {%d}\n", totaloffset, k, ++x);
     totaloffset += period;
   }
-  printf("------------------------------\n");
+  printf("------------------------------%d\n", filled);
 }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-  unsigned long begin = 5 * 60 * 60 + 10+60*10;
+  fill24Data();
+  printStats(3600);
+/*
+  unsigned long begin = 455659;
   while (1) {
-    m.PutData(begin, 109);
-    begin++; m.PutData(begin, 109);
+    m.PutData(begin + filled, 109);
+    filled++;
     printStats(30);
     Sleep(100);
   }
+*/
+
 	return 0;
 }
 
